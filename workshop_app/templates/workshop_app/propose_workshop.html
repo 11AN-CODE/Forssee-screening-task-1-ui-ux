@@ -6,13 +6,12 @@
 {% endblock %}
 
 {% block extra-dependencies %}
-    <link rel="stylesheet" href="{% static 'workshop_app/css/jquery-ui.css' %}" type="text/css"/>
-    <script src="{% static 'workshop_app/js/jquery-1.12.4.js' %}"></script>
-    <script src="{% static 'workshop_app/js/jquery-ui.min.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 {% endblock %}
 
 {% block extra-custom-scripts %}
     <script>
+        // Move the inline script here
         var dateToday = new Date();
         var upto = new Date();
 
@@ -20,7 +19,7 @@
         upto.setFullYear(dateToday.getFullYear() + 1);
 
         $(function () {
-            $(".datepicker").datepicker({
+            $("#id_date").datepicker({
                 changeMonth: true,
                 changeYear: true,
                 minDate: dateToday,
@@ -28,93 +27,82 @@
                 beforeShowDay: $.datepicker.noWeekends,
             });
 
-
             $('#disp_tnc').click(function (e) {
-                e.preventDefault()
+                e.preventDefault();
                 if ($('#id_workshop_type').val() === '')
-                    $('.modal-body').html("<p class='text-danger'>Please select a workshop type</p>")
+                    $('.modal-body').html("<p class='text-danger'>Please select a workshop type</p>");
                 else {
                     $.ajax({
                         url: '/workshop/type_tnc/' + $('#id_workshop_type').val(),
                         success: function (data) {
-                            $('.modal-body').html(data.tnc)
+                            $('.modal-body').html(data.tnc);
                         }
-                    })
+                    });
                 }
-            })
+            });
         });
     </script>
 {% endblock %}
 
-
 {% block content %}
-    <style type="text/css">
-        .errorlist {
-            color: red;
-        }
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="alert alert-info" role="alert">
+                Note: Before proposing the workshop, please check about the workshop in the
+                <a href="{% url 'workshop_app:workshop_type_list' %}"><strong>Workshop Types</strong></a> section.
+            </div>
 
-    .modal-open .modal{
-        overflow-y: hidden;
-    }
-    </style>
-
-    <div class="container" align="center">
-        <div class="alert alert-info">
-            Note: Before proposing the workshop, please check about the workshop in the
-            <strong>Workshop Types</strong> section
-        </div>
-        <br><br>
-        <div class="col-md-6 col-md-offset-6">
-            <div class="card border-primary">
-                <div class="card-header">
-                    <h3>Propose Workshop</h3>
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="fw-light my-4">Propose Workshop</h3>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <form method="post">
-                            {% csrf_token %}
-                            <br/>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-floating mb-3">
                             {{ form.workshop_type }}
-                            <br>
+                            <label for="{{ form.workshop_type.id_for_label }}">Workshop Type</label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
                             {{ form.date }}
+                            <label for="{{ form.date.id_for_label }}">Date</label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            {{ form.tnc_accepted }}
+                            <label class="form-check-label" for="{{ form.tnc_accepted.id_for_label }}">
+                                I accept the <a href="#" id="disp_tnc" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">terms and conditions</a>
+                            </label>
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Errors:</strong>
                             <br>
-                            {{ form.tnc_accepted }} I accept the
-                            <a href="#" id="disp_tnc" data-toggle="modal"
-                            data-target="#exampleModalCenter">
-                                terms and conditions
-                            </a>
-                            <br>
-                            {% if form.errors %}
-                                <br>
-                                <div style="text-align: left; border: 1px solid red; padding-top: 5px">
-                                    <h5 style="text-align: center; color: red; font-weight: bolder">Errors</h5>
-                                    {{ form.errors }}
-                                </div>
-                            {% endif %}
-                            <br>
+                            {{ form.errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="d-grid mt-4">
                             <button class="btn btn-success" type="submit">Submit</button>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-        <br>
-
     </div>
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
-         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLongTitle">Terms and Conditions</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
-                </div>
+                    </div>
             </div>
         </div>
     </div>

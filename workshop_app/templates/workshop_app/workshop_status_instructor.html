@@ -1,136 +1,180 @@
-{% extends "workshop_app/base.html" %}
-{% load static %}
+the {% extends "workshop_app/base.html" %} {% load static %}
 
 {% block title %}
-    Workshop Status
+Workshop Status
 {% endblock %}
 
 {% block extra-dependencies %}
-    <style >
-    .table-heading{
-        color: #04a9cf;
-    }
-    </style>
-    <link rel="stylesheet" href="{% static 'workshop_app/css/jquery-ui.css' %}" type="text/css"/>
-    <script src="{% static 'workshop_app/js/jquery-1.12.4.js' %}"></script>
-    <script src="{% static 'workshop_app/js/jquery-ui.min.js' %}"></script>
-{% endblock %}
-{% block extra-custom-scripts %}
-    {% load static %}
-    <script src="{% static 'workshop_app/js/datepicker.js' %}"></script>
+<link rel="stylesheet" href="{% static 'workshop_app/css/jquery-ui.css' %}" type="text/css"/>
+<script src="{% static 'workshop_app/js/jquery-1.12.4.js' %}"></script>
+<script src="{% static 'workshop_app/js/jquery-ui.min.js' %}"></script>
 {% endblock %}
 
+{% block extra-custom-scripts %}
+<script>
+function changeDate(dateInfo) {
+// Functionality for changing date via UI
+// This is kept from the original code as it's a backend interaction.
+// You will need to ensure the JS file 'datepicker.js' is available.
+var info = dateInfo.split(',');
+var className = ".myDialog" + info[0] + info[2];
+$(className).dialog({
+resizable: false,
+modal: true,
+});
+$("." + info[0] + "Date" + info[2]).datepicker({
+dateFormat: 'yy-mm-dd',
+changeMonth: true,
+changeYear: true,
+beforeShowDay: $.datepicker.noWeekends
+});
+}
+</script>
+<script>
+// This script is for the custom confirmation modal for accepting workshops
+document.addEventListener('DOMContentLoaded', function () {
+var confirmModal = document.getElementById('confirmationModal');
+confirmModal.addEventListener('show.bs.modal', function (event) {
+var button = event.relatedTarget;
+var workshopId = button.getAttribute('data-bs-workshop-id');
+var acceptLink = document.getElementById('acceptLink');
+acceptLink.href = button.getAttribute('data-bs-href');
+});
+});
+</script>
+{% endblock %}
 
 {% block content %}
-    {% if not workshops %}
-        <div class="container">
-            <div class="jumbotron">
-                <h1>Welcome {{ user.first_name }}</h1>
-                <p>Your workshop related information will be shown here, Please navigate to <b>Workshop list</b> and
-                    depending upon
-                    your expertise and availability create a workshop by going to
-                    <b>Create Workshop</b>.</p>
-            </div>
-        </div>
-    {% else %}
-        <h3 class="text-center">The status of your workshops </h3>
-        <br>
+<div class="container py-4">
+{% if not workshops %}
+<div class="jumbotron text-center bg-light p-5 rounded-3 shadow-sm">
+<h1 class="display-5">Welcome {{ user.first_name }}</h1>
+<p class="lead">Your workshop-related information will be shown here. Please navigate to <strong>Workshop list</strong> and depending on your expertise and availability, create a workshop by going to <strong>Create Workshop</strong>.</p>
+</div>
+{% else %}
+<h3 class="text-center display-6 mb-4">The status of your workshops</h3>
 
         <!-- Accepted View -->
-        <br>
-        <div class="container">
-            <h3 align="center" class="table-heading"><strong>Workshops Accepted</strong></h3>
-            <table class="table table-striped table-responsive-sm">
-                <thead>
-                <tr>
-                    <th>Coordinator Name</th>
-                    <th>Institute</th>
-                    <th>Workshop Name</th>
-                    <th>Workshop Day</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                {% for workshop in workshops %}
-                    <tbody>
-                    <tr>
-                        {% if workshop.status %}
-                            <td>
-                                <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}">
-                                    {{ workshop.coordinator.get_full_name }}</a>
-                            </td>
-                            <td>{{ workshop.coordinator.profile.institute }}</td>
-                            <td>{{ workshop.workshop_type |capfirst }}</td>
-                            <td>{{ workshop.date | date }}
-
-                                {% if workshop.date > today %}
-                                    <span class="material-icons datepicker btn"
-                                          data-toggle="popinfo"
-                                          title="Note"
-                                          data-content="Click here to change date"
-                                          onclick="changeDate('R,{{ workshop.date| safe }}, {{ forloop.counter }}')">event</span>
-                                    <div class="myDialogR{{ forloop.counter }}" style="display: none;"
-                                         title="Select New Date">
-                                        <form method="post" action="{% url 'workshop_app:change_workshop_date' workshop.id %}">
-                                            <input type="text" placeholder="New date" name="new_date"
-                                                   class="rDate{{ forloop.counter }}"/><br>
-                                            {% csrf_token %}
-                                            <button class="btn btn-primary btn-xs" type="submit">Save</button>
-                                        </form>
-                                    </div>
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title text-center my-2">Workshops Accepted</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Coordinator Name</th>
+                                <th>Institute</th>
+                                <th>Workshop Name</th>
+                                <th>Workshop Day</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for workshop in workshops %}
+                                {% if workshop.status %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}" class="link-primary">
+                                                {{ workshop.coordinator.get_full_name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ workshop.coordinator.profile.institute }}</td>
+                                        <td>{{ workshop.workshop_type|capfirst }}</td>
+                                        <td>
+                                            {{ workshop.date|date }}
+                                            {% if workshop.date > today %}
+                                                <span class="bi bi-calendar-event-fill datepicker btn btn-link p-0"
+                                                      data-bs-toggle="tooltip" data-bs-placement="top" title="Click to change date"
+                                                      onclick="changeDate('R,{{ workshop.date|safe }}, {{ forloop.counter }}')">
+                                                </span>
+                                                <div class="myDialogR{{ forloop.counter }}" style="display: none;" title="Select New Date">
+                                                    <form method="post" action="{% url 'workshop_app:change_workshop_date' workshop.id %}">
+                                                        <input type="text" placeholder="New date" name="new_date" class="form-control rDate{{ forloop.counter}}"/><br>
+                                                        {% csrf_token %}
+                                                        <button class="btn btn-primary btn-sm" type="submit">Save</button>
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge bg-success">{{ workshop.get_status }}</span></td>
+                                    </tr>
                                 {% endif %}
-                            </td>
-                            <td><span class="badge badge-success">{{ workshop.get_status }}</span></td>
-                        {% endif %}
-                    </tr>
-                    </tbody>
-
-                {% endfor %}
-
-            </table>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-
 
         <!-- Proposed View -->
-        <br>
-        <div class="container">
-            <h3 class="text-center table-heading"><strong>Workshops Proposed By Coordinators</strong>
-            </h3>
-            <table class="table table-striped table-responsive-sm">
-                <thead>
-                <tr>
-                    <th>Coordinator Name</th>
-                    <th>Institute</th>
-                    <th>Workshop Name</th>
-                    <th>Workshop Day</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                {% csrf_token %}
-                {% for workshop in workshops %}
-                    <tbody>
-                    <tr>
-                        {% if not workshop.status and workshop.tnc_accepted %}
-                            <td>
-                                <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}">
-                                    {{ workshop.coordinator.get_full_name }}</a>
-                            </td>
-                            <td>{{ workshop.coordinator.profile.institute }}</td>
-                            <td>{{ workshop.workshop_type }}</td>
-                            <td>{{ workshop.date | date }}</td>
-                            <td><span class="badge badge-warning">{{ workshop.get_status }}</span></td>
-                            <td>
-                                <a href="{% url 'workshop_app:accept_workshop' workshop.id %}" class="btn btn-primary btn-sm"  onclick="return confirm('Once accepted you cannot reject, you have to personally contact the Coordinator if the workshop is to be cancelled. Are you sure you want to accept the workshop?')">
-                                    Accept
-                                </a>
-                            </td>
-                        {% endif %}
-                    </tr>
-                    </tbody>
-
-                {% endfor %}
-            </table>
+        <div class="card shadow-lg">
+            <div class="card-header bg-warning text-dark">
+                <h3 class="card-title text-center my-2">Workshops Proposed By Coordinators</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Coordinator Name</th>
+                                <th>Institute</th>
+                                <th>Workshop Name</th>
+                                <th>Workshop Day</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for workshop in workshops %}
+                                {% if not workshop.status and workshop.tnc_accepted %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}" class="link-primary">
+                                                {{ workshop.coordinator.get_full_name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ workshop.coordinator.profile.institute }}</td>
+                                        <td>{{ workshop.workshop_type }}</td>
+                                        <td>{{ workshop.date|date }}</td>
+                                        <td><span class="badge bg-warning text-dark">{{ workshop.get_status }}</span></td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#confirmationModal"
+                                                    data-bs-href="{% url 'workshop_app:accept_workshop' workshop.id %}">
+                                                Accept
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     {% endif %}
+</div>
+
+<!-- Reusable Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Once accepted you cannot reject. You have to personally contact the Coordinator if the workshop is to be cancelled. Are you sure you want to accept the workshop?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a id="acceptLink" class="btn btn-primary">Accept</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

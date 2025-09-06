@@ -72,8 +72,7 @@ def index(request):
 def user_login(request):
     """User Login"""
     user = request.user
-    if user.is_superuser:
-        return redirect('/admin')
+    
     if user.is_authenticated:
         return redirect(get_landing_page(user))
 

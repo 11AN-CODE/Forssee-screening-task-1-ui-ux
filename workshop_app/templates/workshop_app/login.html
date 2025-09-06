@@ -4,50 +4,56 @@
     Login
 {% endblock %}
 
+{% block extra-dependencies %}
+<style>
+    body {
+        overflow: hidden;
+    }
+    input[name="username"], input[name="password"] {
+        font-size: 1.5rem !important;
+        font-weight: 500;
+        color: #007bff;
+    }
+    input[name="username"]::placeholder,
+    input[name="password"]::placeholder {
+        font-size: 1.3rem;
+        color: #0056b3;
+        opacity: 1;
+    }
+    .fixed-login-card {
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        width: 100%;
+        max-width: 600px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-md-offset-6">
-                <div class="card">
-                    <div class="card-body">
-                        <form class="px-3 py-3" method="post">
-                        {% csrf_token %}
-                        {% if form.errors %}
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <div class="alert alert-dismissible alert-danger">
-                                        <button type="button" class="close" data-dismiss="alert">
-                                            <i class="fa fa-close"></i>
-                                        </button>
-                                        <strong>{{ error|escape }}</strong>
-                                    </div>
-                                {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                                <div class="alert alert-dismissible alert-danger">
-                                    <button type="button" class="close" data-dismiss="alert">
-                                        <i class="fa fa-close"></i>
-                                    </button>
-                                    <strong>{{ error|escape }}</strong>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                        <div class="form-group">
-                          <label for="id_username">Username</label>
-                          {{ form.username }}
-                        </div>
-                        <div class="form-group">
-                          <label for="id_password">Password</label>
-                          {{ form.password }}
-                        </div>
-                        <button type="submit" class="btn btn-primary">Sign in</button>
-                        </form>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'workshop_app:register' %}">New around here? Sign up</a>
-                        <a class="dropdown-item" href="{% url 'password_reset' %}">Forgot password?</a>
-                    </div>
-                </div>  
-            </div>
+<div class="fixed-login-card">
+    <div class="card shadow-lg border-0 rounded-4" style="background: #f8f9fa; padding: 2.5rem 2rem;">
+        <div class="card-header text-center rounded-top-4" style="background: linear-gradient(90deg, #007bff 60%, #0056b3 100%); color: #fff;">
+            <h2 class="fw-bold my-3">Sign In</h2>
+        </div>
+        <div class="card-body p-5">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-floating mb-4">
+                    {{ form.username }}
+                    <label for="{{ form.username.id_for_label }}"><b>Username</b></label>
+                </div>
+                <div class="form-floating mb-4">
+                    {{ form.password }}
+                    <label for="{{ form.password.id_for_label }}"><b>Password</b></label>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 {% endblock %}
