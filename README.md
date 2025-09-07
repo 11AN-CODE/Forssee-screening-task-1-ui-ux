@@ -2,7 +2,6 @@
 
 > This website is for coordinators to book a workshop(s), they can book a workshop based on instructors posts or can propose a workshop date based on their convenience.
 
-
 ### Features
 * Statistics
     1. Instructors Only
