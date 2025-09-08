@@ -1,355 +1,154 @@
-{% extends 'workshop_app/base.html' %}
-
-{% block title %}
- Workshop  Statistics
-{% endblock %}
-
-
-{% block extra %}
-
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="{{URL_ROOT}}/static/workshop_app/js/bootstrap-3.3.7.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
- 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-  	<!-- For Charts -->
-
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
-
-	<!-- For Google GeoChart India Map -->
-	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
-
-<script>
-    var dateToday = new Date();
-    var upto = new Date();
-
-    dateToday.setDate(dateToday.getDate() - 1);
-    upto.setFullYear(dateToday.getFullYear() + 1);
-
-  $( function() {
-      from = $( "#from" )
-        .datepicker({
-          defaultDate: "+1w",
-          changeMonth: true,
-          changeYear: true,
-          showButtonPanel: true,
-          maxDate: dateToday,
-          dateFormat: "yy-mm-dd"
-        })
-        .on( "change", function() {
-          to.datepicker( "option", "minDate", getDate( this ) );
-        }),
-      to = $( "#to" ).datepicker({
-        defaultDate: "+1w",
-        changeMonth: true,
-        changeYear: true,
-        showButtonPanel: true,
-        minDate: dateToday,
-       	maxDate: upto,
-       	dateFormat: "yy-mm-dd"
-      })
-      .on( "change", function() {
-        from.datepicker( "option", "maxDate", getDate( this ) );
-      });
-
-	function getDate( element ) {
-		var date;
-		try {
-			date = $.datepicker.parseDate( dateFormat, element.value );
-		} catch( error ) {
-			date = null;
-		}
-		return date;
-		}
-	} );
-
-  </script>
-
-{% endblock %}
-
 {% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 text-center text-primary fw-bold">Workshop Statistics Dashboard</h2>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filter-form" method="POST" class="d-flex flex-column h-100">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="from" class="form-label">From Date</label>
+                            <input type="date" id="from" name="from" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="to" class="form-label">To Date</label>
+                            <input type="date" id="to" name="to" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="workshop" class="form-label">Workshop Type</label>
+                            <select id="workshop" name="workshop" class="form-select">
+                                <option value="">----------</option>
+                                </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="state" class="form-label">State</label>
+                            <select id="state" name="state" class="form-select">
+                                <option value="">----------</option>
+                                </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sort" class="form-label">Sort by</label>
+                            <select id="sort" name="sort" class="form-select">
+                                <option>Newest</option>
+                                <option>Oldest</option>
+                            </select>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="show-my-workshops" name="show-my-workshops">
+                            <label class="form-check-label" for="show-my-workshops">Show my workshops only</label>
+                        </div>
+                        <div class="mt-auto d-flex justify-content-between">
+                            <button class="btn btn-outline-secondary" type="reset">Clear</button>
+                            <div>
+                                <button class="btn btn-success" type="submit" name="download" value="Download">Download</button>
+                                <button class="btn btn-primary" type="submit" name="view" value="View">View</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-<div class="container">
-  <div class="row">
-		<div class="col-md-6" align="left" >
-			  <fieldset data-mini="true">
-			    <label for="radio-1">Monthly Count </label>
-			    <input type="radio" name="radio-1" id="radio-1" value="NWPM">
-			    <label for="radio-2">Overall Count</label>
-			    <input type="radio" name="radio-1" id="radio-2" value="OWC">
-			    <label for="radio-3">India Map</label>
-			    <input type="radio" name="radio-1" id="radio-3" value="MOIN">
-			  </fieldset>
-		</div>
-	
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Workshop Charts</h5>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <div class="mb-4 w-100">
+                        <label class="form-label fw-bold">Select Chart Type:</label>
+                        <div class="btn-group w-100" role="group" aria-label="Chart type selection">
+                            <input type="radio" class="btn-check" name="chart-type" id="monthly-count" value="NWPM" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="monthly-count">Monthly Count</label>
 
-	{% if show_workshop_stats %}
-	<div  align="right" class="col-md-6">
-		<form method="POST" >
-			{% csrf_token %}
-			<div class="form-group">
-				<label for="from">From</label>
-				<input type="text" id="from" name="from">
-				<label for="to">to</label>
-				<input type="text" id="to" name="to">
-				<button class="btn btn-warning btn-sm" type="submit" name="Download" value="Download">Download</button>
-				<button class="btn btn-info btn-sm" type="submit" name="View" value="View">View</button>
-			</div>
-	    </form>
+                            <input type="radio" class="btn-check" name="chart-type" id="overall-count" value="OWC" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="overall-count">Overall Count</label>
 
-	    {% if messages %}
-		<ul class="messages">
-		    {% for message in messages %}
-		    	<div class="alert alert-{{ message.tags }}">
-				    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}> {{ message }}
-				    </li>
-			    </div>
-		    {% endfor %}
-		</ul>
-		{% endif %}
+                            <input type="radio" class="btn-check" name="chart-type" id="india-map" value="MOIN" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="india-map">India Map</label>
+                        </div>
+                    </div>
+                    <canvas id="myChartPie" class="w-100" style="max-height: 400px;"></canvas>
+                    <div id="visualization" class="w-100" style="max-height: 400px; display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-	</div>
-	<br>
-		<table class="table table-hover">
-			<thead>
-				<tr>
-					<th>Coordinator Name</th>
-					<th>Institute Name</th>
-					<th>Instructor Name</th>
-					<th>Workshop Name</th>
-					<th>Workshop Date</th>
-					<th>Requested/Proposed By</th>
-				</tr>
-			</thead>
-			{% csrf_token %}
-			{% for workshop in upcoming_workshops %}
-				{% if workshop.proposed_workshop_date %}
-						<tbody>
-							<tr>
-							<td>{{ workshop.proposed_workshop_coordinator.get_full_name | capfirst }}</td>
-							<td>{{ workshop.proposed_workshop_coordinator.profile.institute | capfirst }}</td>
-							<td>{{ workshop.proposed_workshop_instructor.get_full_name }}</td>
-							<td>{{ workshop.proposed_workshop_title.workshoptype_name }}</td>
-							<td>{{ workshop.proposed_workshop_date | date}}</td>
-							<td>Coordinator</td>
-							</tr>
-						</tbody>
-				{% else %}
-						<tbody>
-							<tr>
-							<td>{{ workshop.requested_workshop_coordinator.get_full_name | capfirst }}</td>
-							<td>{{ workshop.requested_workshop_coordinator.profile.institute | capfirst }}</td>
-							<td>{{ workshop.requested_workshop_instructor.get_full_name }}</td>
-							<td>{{ workshop.requested_workshop_title.workshoptype_name }}</td>
-							<td>{{ workshop.requested_workshop_date | date}}</td>
-							<td>Instructor</td>
-							</tr>
-						</tbody>
-				{% endif %}
-			{% endfor %}
-		</table>
-		<!-- Page Navigation -->
-		<div class="container">
-		<div class="Page-Nav" align="center">
-		<nav aria-label="Page navigation">
-		 	<ul class="pagination pagination-sm">
-			  	<li class="page-item">
-			      {% if upcoming_workshops.has_previous %}
-					<a class="page-link" tabindex="-1" 
-						href="?page={{ upcoming_workshops.previous_page_number }}">Previous</a>
-				  {% endif %}
-			    </li>
-			    <li class="page-item">
-			    <span class="current">
-				Page {{ upcoming_workshops.number }} of {{ upcoming_workshops.paginator.num_pages }}
-					</span>
-				</li>
-			    <li class="page-item">
-			    {% if upcoming_workshops.has_next %}
-					<a class="page-link" href="?page={{ upcoming_workshops.next_page_number }}">Next
-					</a>	
-				{% endif %}
-			    </li>
-		  	</ul>
-		</nav>
-		</div>
-	</div>
-	{% else %}
-		<div class="jumbotron">
-			<h2>Permission to View Upcoming Workshops is set to false, please set it to true in settings.py</h2>
-		</div>
-	{% endif %}
-	</div>
+    {% if show_workshop_stats %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Upcoming Workshops</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Sr No.</th>
+                            <th>Coordinator Name</th>
+                            <th>Institute Name</th>
+                            <th>Instructor Name</th>
+                            <th>Workshop Name</th>
+                            <th>Workshop Date</th>
+                            <th>Requested/Proposed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for workshop in upcoming_workshops %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ workshop.coordinator_name }}</td>
+                            <td>{{ workshop.institute_name }}</td>
+                            <td>{{ workshop.instructor_name }}</td>
+                            <td>{{ workshop.workshop_name }}</td>
+                            <td>{{ workshop.workshop_date | date }}</td>
+                            <td>{{ workshop.requested_by }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not upcoming_workshops.has_previous %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ upcoming_workshops.previous_page_number }}" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link text-dark">Page {{ upcoming_workshops.number }} of {{ upcoming_workshops.paginator.num_pages }}</span>
+                    </li>
+                    <li class="page-item {% if not upcoming_workshops.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ upcoming_workshops.next_page_number }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center" role="alert">
+        <h5>Permission to View Upcoming Workshops is set to false. Please set it to true in `settings.py`.</h5>
+    </div>
+    {% endif %}
 
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            <ul class="messages list-unstyled">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mt-3">
+                    <li>{{ message }}</li>
+                </div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
 
-<div class="row">
-	<br>
-	<div class="col-md-12 ">
-		<br>
-		<canvas id="myChartPie" ></canvas>
-		<script>
-			$( function() {
-			    $( "fieldset" ).controlgroup();
-			  });
-
-			var ctx1 = document.getElementById("myChartPie").getContext('2d');
-			var myChart;
-
-			$('input[type=radio]').change(function() {
-
-			        if (this.value == 'NWPM') {//Number of Workshops per month
-			            if(myChart){
-			        	myChart.destroy();
-			            }
-
-			               
-			        document.getElementById("visualization").style.visibility='hidden';
-					myChart = new Chart(ctx1, {
-					    type: 'bar',
-					    data: {
-					        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', '	December'],
-							datasets: [{
-							label: 'Number of workshops per Month for '+ dateToday.getFullYear(),
-					            data: {{ workshop_count }},
-					            backgroundColor: [
-					                'rgba(255, 99, 132, 0.2)',
-					                'rgba(54, 162, 235, 0.2)',
-					                'rgba(255, 206, 86, 0.2)',
-					                'rgba(75, 192, 192, 0.2)',
-					                'rgba(153, 102, 255, 0.2)',
-					                'rgba(242, 38, 19, 0.2)',
-					                'rgba(25, 91, 13, 0.2)',
-					                'rgba(54, 12, 235, 0.2)',
-					                'rgba(150, 40, 27, 0.2)',
-					                'rgba(66, 114, 155, 0.2)',
-					                'rgba(219, 10, 91, 0.2)',
-					                'rgba(191, 191, 191, 0.2)'
-					            ],
-					            borderColor: [
-							'rgba(255, 99, 132, 1)',
-					                'rgba(54, 162, 235, 1)',
-					                'rgba(255, 206, 86, 1)',
-					                'rgba(75, 192, 192, 1)',
-					                'rgba(153, 102, 255, 1)',
-					                'rgba(242, 38, 19, 1)',
-					                'rgba(25, 91, 13, 1)',
-					                'rgba(54, 12, 235, 1)',
-					                'rgba(150, 40, 27 ,1)',
-					                'rgba(66, 114, 155, 1)',
-					                'rgba(219, 10, 91, 1)',
-					                'rgba(191, 191, 191, 1)'
-					            ],
-					            borderWidth: 1
-					        }
-
-							]
-					    },
-					    options: {
-					    	responsive: true,
-					    	scales: {
-					            yAxes: [{
-					                ticks: {
-					                    beginAtZero:true
-					                }
-					            }]
-					        }
-					    }
-					});
-				}
-			   else if (this.value == 'OWC') { //Overall Workshop Count
-			        if(myChart){
-			        	myChart.destroy();
-			        }
-			        
-				document.getElementById("visualization").style.visibility='hidden';
-				myChart = new Chart(ctx1, {
-				    type: 'pie',
-				    data: {
-				    	labels : {{ workshoptype_count.0 | safe}},
-				        datasets: [{
-				            data: {{ workshoptype_count.1 }},
-				            //Add more color scheme if workshop number increases
-				            backgroundColor: [
-				                'rgba(153, 102, 255, 1)',
-				                'rgba(191, 191, 1, 1)',
-				                'rgba(75, 192, 192, 1)',
-					            'rgba(153, 102, 255, 1)'
-				           ] 
-				        }]
-				    },
-				    options: {
-				    	responsive: true
-				 		}
-					});
-			     }
-
-				else if (this.value == 'MOIN') {
-			            if(myChart){
-			        		myChart.destroy();
-			            }
-
-				    var dWidth = $(window).width() * 0.9;
-			        var dHeight = $(window).height() * 0.9;
-                
-			        $( "#visualization" ).dialog({
-					resizable: false,
-					draggable: true,
-			        title: 'State wise Completed Workshops(Map of India)',
-					closeOnEscape: true,
-					stack: true,
-					zIndex: 10000,
-					width: dWidth,
-					height: dHeight,    
-					modal: true
-					});
-	
-					document.getElementById("visualization").style.visibility='visible';
-			        function drawVisualization() {
-					    var data = google.visualization.arrayToDataTable(
-						{{ india_map | safe }}
-						);
-
-					var opts = {
-					    region: 'IN',
-					    domain: 'IN',
-					    displayMode: 'regions',
-					    resolution: 'provinces',
-					    datalessRegionColor: 'transparent',
-					    colorAxis: {colors: ['#e6e6e6', '#ff8b3e']},
-					    legend: {position: 'top'},
-					   	};
-
-					var geochart = new google.visualization.GeoChart(
-					document.getElementById('visualization'));
-							geochart.draw(data, opts);
-					    };	
-					if(google) {
-					    google.load('visualization', '1.0', {
-						packages: ['geochart'],
-			            callback: function() {
-					    // do stuff, if you wan't - it doesn't matter, because the page isn't blank!
-							drawVisualization();
-							}
-			            })
-				        }	
-				}
-			});
-		</script>	
-		<style>
-		    #visualization path {
-		    stroke-width:1; /* control the countries borders width */
-		    stroke:white; /* choose a color for the border */
-		    }
-		</style>
-		<div id="visualization" style="width: 400px; height: 300px; display: block; margin: 0 auto;" ></div>
-
-	</div>
 </div>
-</div>
-<br>
 {% endblock %}

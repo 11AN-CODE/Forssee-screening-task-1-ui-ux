@@ -1,48 +1,59 @@
 {% extends 'workshop_app/base.html' %}
 
 {% block title %}
- Workshop  Statistics
+ Workshop Statistics
 {% endblock %}
 
 {% block content %}
-
-<div class="container-fluid">
+<div class="container py-4">
     <div class="row">
-        <div class="col-md-2">
-            <ul class="nav nav-pills list-group">
-                {% for team in all_teams %}
-                    <li class="nav-item">
-                        <a href="{% url 'statistics_app:team' team.id %}" class="nav-link list-group-item">
-                            Team {{forloop.counter}}
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-center fw-bold">
+                    Teams
+                </div>
+                <ul class="nav nav-pills flex-column list-group list-group-flush">
+                    {% for team in all_teams %}
+                        <li class="nav-item">
+                            <a href="{% url 'statistics_app:team' team.id %}" class="nav-link list-group-item">
+                                Team {{ forloop.counter }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-        <div class="col-md-8">
-            <br>
-            <canvas id="myChart"></canvas>
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-center fw-bold">
+                    Team Workshop Chart
+                </div>
+                <div class="card-body">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <script>
     var ctx = document.getElementById('myChart').getContext('2d');
     var chart = new Chart(ctx, {
-        // The type of chart we want to create
         type: 'bar',
-
-        // The data for our dataset
         data: {
-            labels: {{team_labels|safe}},
+            labels: {{ team_labels|safe }},
             datasets: [{
-                data: {{ws_count|safe}},
+                data: {{ ws_count|safe }},
                 label: "Team Members Workshops",
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
             }]
         },
-        // Configuration options go here
-        options: {}
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
     });
 </script>
 {% endblock %}

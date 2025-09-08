@@ -1,140 +1,187 @@
 {% extends 'workshop_app/base.html' %}
 
-{% block title %} Statistics {% endblock %}
+{% block title %}
+    Workshop Statistics
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3">
-            <form method="GET">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h3><u>Filters</u></h3>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{% url 'statistics_app:public' %}" class="btn btn-outline-info">
-                                    <i class="fa fa-times"></i>&nbsp;Clear
-                                </a>
-                            </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-center mb-4">
+    <h2 class="p-3 text-white bg-primary fw-bold rounded d-inline-block">Workshop Statistics Dashboard</h2>
+</div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filter-form" method="GET" class="d-flex flex-column h-100">
+                        <div class="mb-3">
+                            <label for="id_from_date" class="form-label">From Date</label>
+                            {{ form.from_date }}
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div>From date: {{form.from_date}}</div>
-                        <div>To date: {{form.to_date}}</div>
-                        <div>Workshop: {{form.workshop_type}}</div>
-                        <div>State: {{form.state}}</div>
-                        <div>{{form.sort.help_text}}: {{form.sort}}</div>
+                        <div class="mb-3">
+                            <label for="id_to_date" class="form-label">To Date</label>
+                            {{ form.to_date }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_workshop_type" class="form-label">Workshop</label>
+                            {{ form.workshop_type }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_state" class="form-label">State</label>
+                            {{ form.state }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_sort" class="form-label">Sort by</label>
+                            {{ form.sort }}
+                        </div>
                         {% if request.user.is_authenticated %}
-                        <div>{{form.show_workshops.help_text}}: {{form.show_workshops}}</div>
+                        <div class="form-check mb-3">
+                            {{ form.show_workshops }}
+                            <label class="form-check-label" for="id_show_workshops">{{ form.show_workshops.help_text }}</label>
+                        </div>
                         {% endif %}
-                        <br>
-                        <div class="row justify-content-center">
-                            <div class="col-md-4">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-eye"></i>&nbsp;View
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <button type="submit" class="btn btn-info" name="download" value="download">
-                                    <i class="fa fa-download"></i>&nbsp;Download
-                                </button>
+                        <div class="mt-auto d-flex justify-content-between">
+                            <a href="{% url 'statistics_app:public' %}" class="btn btn-outline-secondary">Clear</a>
+                            <div>
+                                <button class="btn btn-success" type="submit" name="download" value="download">Download</button>
+                                <button class="btn btn-primary" type="submit" name="view" value="view">View</button>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="col">
-            <div class="row">
-                <div class="col-md-6">
-                    {% include "statistics_app/paginator.html" %}
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-info" id="state_graph">
-                        <i class="fa fa-bar-chart"></i>&nbsp;State chart
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-info" id="type_graph">
-                        <i class="fa fa-bar-chart"></i>&nbsp;Workshops chart
-                    </button>
+                    </form>
                 </div>
             </div>
-            <table class="table table-responsive-sm">
-                <thead>
-                    <tr>
-                        <th>Sr No.</th>
-                        <th>Coordinator Name</th>
-                        <th>Institute Name</th>
-                        <th>Instructor Name</th>
-                        <th>Workshop Name</th>
-                        <th>Workshop Date</th>
-                    </tr>
-                </thead>
-                {% csrf_token %}
-                {% for workshop in objects %}
-                    <tbody>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Workshop Charts</h5>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <div class="mb-4 w-100">
+                        <label class="form-label fw-bold">Select Chart Type:</label>
+                        <div class="btn-group w-100" role="group" aria-label="Chart type selection">
+                            <input type="radio" class="btn-check" name="chart_type_selector" id="state-chart" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="state-chart">State Chart</label>
+
+                            <input type="radio" class="btn-check" name="chart_type_selector" id="workshop-chart" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="workshop-chart">Workshops Chart</label>
+                        </div>
+                    </div>
+                    <canvas id="myChart" class="w-100" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Workshop List</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="bg-light">
                         <tr>
-                            <td>{{ forloop.counter0|add:objects.start_index}}</td>
-                            <td>{{ workshop.coordinator.get_full_name | capfirst }}</td>
-                            <td>{{ workshop.coordinator.profile.institute | capfirst }}</td>
-                            <td>{{ workshop.instructor.get_full_name | capfirst }}</td>
-                            <td>{{ workshop.workshop_type.name }}</td>
-                            <td>{{ workshop.date | date}}</td>
+                            <th>Sr No.</th>
+                            <th>Coordinator Name</th>
+                            <th>Institute Name</th>
+                            <th>Instructor Name</th>
+                            <th>Workshop Name</th>
+                            <th>Workshop Date</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        {% for workshop in objects %}
+                        <tr>
+                            <td>{{ forloop.counter0|add:objects.start_index }}</td>
+                            <td>{{ workshop.coordinator.get_full_name|capfirst }}</td>
+                            <td>{{ workshop.coordinator.profile.institute|capfirst }}</td>
+                            <td>{{ workshop.instructor.get_full_name|capfirst }}</td>
+                            <td>{{ workshop.workshop_type.name }}</td>
+                            <td>{{ workshop.date|date }}</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
-                {% endfor %}
-            </table>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-center">
             {% include "statistics_app/paginator.html" %}
         </div>
     </div>
+
+    {% if messages %}
+    <ul class="messages list-unstyled">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mt-3">
+            <li>{{ message }}</li>
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
 </div>
 
-<!-- The Modal -->
-<div id="dialog" title="Workshops Statistics">
-    <canvas id="myChart"></canvas>
-</div>
+<script>
+    // Correctly parse JSON from Django context to JavaScript objects
+    const stateLabels = JSON.parse("{{ ws_states|safe }}");
+    const stateData = JSON.parse("{{ ws_count|safe }}");
+    const typeLabels = JSON.parse("{{ ws_type|safe }}");
+    const typeData = JSON.parse("{{ ws_type_count|safe }}");
 
-<script type="text/javascript">
-    var state_labels = {{ws_states|safe}};
-    var state_data = {{ws_count|safe}};
-    var type_labels = {{ws_type|safe}};
-    var type_data = {{ws_type_count|safe}};
-    var chart;
-    $("#state_graph").on("click", function() {
-        show_graph(state_labels, state_data, "State wise workshops");
-    });
-    $("#type_graph").on("click", function() {
-        show_graph(type_labels, type_data, "Type wise workshops");
-    });
+    let myChart;
 
-    function show_graph(labels, data, graph_name, chart_name) {
-        var ctx = document.getElementById('myChart').getContext('2d');
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            // The type of chart we want to create
+    function renderChart(labels, data, title) {
+        if (myChart) {
+            myChart.destroy();
+        }
+        const ctx = document.getElementById('myChart').getContext('2d');
+        myChart = new Chart(ctx, {
             type: 'bar',
-
-            // The data for our dataset
             data: {
                 labels: labels,
                 datasets: [{
+                    label: title,
                     data: data,
-                    label: graph_name,
-                    backgroundColor: 'rgb(255, 99, 132)',
-                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
                 }]
             },
-            // Configuration options go here
-            options: {}
-        });
-        $("#dialog").dialog({
-            width: 900,
-            height: 500
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                }
+            }
         });
     }
-</script>
 
+    // Event listeners for radio buttons
+    document.getElementById('state-chart').addEventListener('change', () => {
+        renderChart(stateLabels, stateData, "State-wise Workshops");
+    });
+    document.getElementById('workshop-chart').addEventListener('change', () => {
+        renderChart(typeLabels, typeData, "Workshop Type-wise Count");
+    });
+
+    // Initial render
+    window.addEventListener('load', () => {
+        // Set the state chart as the default on page load
+        document.getElementById('state-chart').checked = true;
+        renderChart(stateLabels, stateData, "State-wise Workshops");
+    });
+</script>
 {% endblock %}
