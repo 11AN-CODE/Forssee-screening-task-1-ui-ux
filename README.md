@@ -23,3 +23,4 @@ __NOTE__: Check docs/Getting_Started.md for more info.
 ## i am working on this.
 
 The task is almost complete.
+In the starting , the task were difficult.
