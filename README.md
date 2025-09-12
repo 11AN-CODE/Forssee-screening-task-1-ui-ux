@@ -25,5 +25,4 @@ __NOTE__: Check docs/Getting_Started.md for more info.
 
 The task is almost complete.
 In the starting , the task were difficult.
-but slowly i was ndestanding it 
 
