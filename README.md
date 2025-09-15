@@ -9,7 +9,15 @@ The main page for the project (after running the server) is located at:
 http://127.0.0.1:8000/workshop/login
 
 Demo / Preview
+<img width="814" height="604" alt="image" src="https://github.com/user-attachments/assets/23b80f2e-9f64-40ac-81b6-c1bf90208c7a" />
+
 <img width="1253" height="614" alt="image" src="https://github.com/user-attachments/assets/da742f71-e98c-4438-9c00-d2962793ffba" />
+
+<img width="1304" height="346" alt="image" src="https://github.com/user-attachments/assets/96241331-9717-4f6c-95fb-0e8554ec4a6c" />
+
+<img width="1241" height="407" alt="image" src="https://github.com/user-attachments/assets/0bb3816b-d3d3-4a51-9d34-4f2605c0ea3c" />
+
+
 
 
 Guide to Install and Run the Website
